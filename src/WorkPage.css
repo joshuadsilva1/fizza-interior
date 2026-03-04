@@ -1,0 +1,266 @@
+/* 1. Update your existing work-container class */
+.work-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #d1d1cf;
+}
+
+.fullscreen-view {
+  position: fixed;
+  inset: 0;
+  background: black;
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.fullscreen-view img {
+  width: 85vw;
+  height: 85vh;
+  object-fit: contain;
+}
+
+.close-btn {
+  position: absolute;
+  top: 40px;
+  right: 40px;
+  background: none;
+  border: 1px solid white;
+  color: white;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.thumbnail-counter {
+  position: fixed;
+  left: 40px;
+  bottom: 60px;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+
+
+.thumbnail-container {
+  width: 45px;
+  height: 65px;
+}
+
+
+.thumbnail-sidebar {
+  position: fixed;
+  left: 20px;
+  top: 40%; /* Starting position */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 50;
+  will-change: transform; /* Optimizes performance for the scroll animation */
+}
+
+/* Ensure the container doesn't clip the movement */
+.thumbnail-container {
+  flex-shrink: 0;
+  width: 45px;
+  height: 65px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+/* Bigger when centered */
+.thumbnail-sidebar.centered .thumbnail-container {
+  width: 200px;
+  height: 300px;
+}
+
+
+/* Highlights the currently active image */
+.thumbnail-container.active {
+  opacity: 1;
+}
+
+
+
+.thumbnail-image {
+  width: 100%;
+  height: 100%; /* Change from 150% to 100% */
+  object-fit: cover;
+  display: block;
+}
+
+.project-info {
+  position: absolute;
+  bottom: 10%;
+  left: 10%;
+  z-index: 10;
+  pointer-events: none; /* Let clicks pass through to the image if needed */
+}
+
+.project-info h3 {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.project-info h2 {
+  font-size: 5rem;
+  margin: 0 0 1rem 0;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.discover-link {
+  font-size: 1.1rem;
+  text-decoration: underline;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+
+.project-wrapper {
+  height: 100vh;
+  width: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* Keeps the parallax image clipped */
+}
+
+.project-image-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Necessary for parallax clipping */
+}
+
+.project-image {
+  width: 100%;
+  height: 100%; /* Change from 140% to 100% to use object-position parallax */
+  object-fit: cover;
+}
+
+:root, body, #root {
+  margin: 0 !important;
+  padding: 0 !important;
+  max-width: 100% !important;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.menu-trigger:focus {
+  outline: none;
+}
+
+.menu-trigger {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  z-index: 100;
+  background: none;
+  outline: none;
+  border: none; /* If you don't want any border at all */
+  -webkit-tap-highlight-color: transparent;
+  color: #ffffff;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.nav-overlay {
+  position: fixed;
+  top: 36px; 
+  right: 140px; 
+  z-index: 95;
+  background: transparent; /* No background */
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.nav-overlay ul {
+  display: flex;
+  flex-direction: row; /* Ensure horizontal */
+  gap: 30px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Toggle visibility via the motion prop instead of display:none */
+.nav-overlay[style*="pointer-events: auto"] {
+  opacity: 1;
+}
+
+
+
+.nav-overlay li a {
+  font-size: 1rem; /* Smaller size for inline look */
+  text-decoration: none;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.back-to-top {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 50;
+  background: none;
+  border: 1px solid #ffffff;
+  padding: 10px 15px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+
+@media (max-width: 768px) {
+  /* Change menu to vertical column */
+  .nav-overlay {
+    top: 80px; /* Move it down so it doesn't hit the 'Close' button */
+    right: 30px;
+    align-items: flex-end;
+  }
+
+  .nav-overlay ul {
+    flex-direction: column; /* Stack vertically */
+    margin-right: 20px;
+    text-align: right;
+  }
+
+ 
+
+  /* Reduce Heading sizes for mobile screens */
+  .project-info h2 {
+    font-size: 2.5rem;
+    margin-left: 20px;
+  }
+
+  .project-info h3 {
+    font-size: 0.8rem;
+  }
+
+  /* Adjust Sidebar for Mobile (optional: hide it or make it smaller) */
+  .thumbnail-sidebar {
+    left: 10px;
+    scale: 0.8;
+    transform-origin: left center;
+  }
+
+  .thumbnail-counter {
+    left: 20px;
+    bottom: 30px;
+  }
+}
