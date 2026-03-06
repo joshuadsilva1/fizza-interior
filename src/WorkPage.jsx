@@ -1,4 +1,5 @@
 import './WorkPage.css';
+import { Link } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import Lenis from '@studio-freight/lenis';
 import {
@@ -6,8 +7,10 @@ import {
   useScroll,
   useTransform,
   AnimatePresence,
-  useMotionValueEvent
+  useMotionValueEvent,
+  useMotionTemplate // Add this
 } from 'framer-motion';
+import Menu from './Menu';
 
 import roseatehotel from './assets/image/roseatehotel.jpg';
 import sixsenses from './assets/image/sixsenses.jpg';
@@ -30,30 +33,34 @@ const projects = [
 ];
 
 export default function WorkPage() {
-  const [centerThumbnails, setCenterThumbnails] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+  
+  // --- INTRO TIMELINE PHASES ---
+  const [introPhase, setIntroPhase] = useState('start');
   const lenisRef = useRef(null);
   
-
   const { scrollYProgress } = useScroll();
-
-  // Thumbnail vertical scroll AFTER 15%
-  const thumbnailScroll = useTransform(
-  scrollYProgress,
-  [0, 1],
-  ["0%", "-50%"] // Use percentages for more reliable movement
-);
-
+  const thumbnailScroll = useTransform(scrollYProgress, [0, 1], ["0%", "-50%"]);
   const thumbnailY = useTransform(scrollYProgress, [0, 1], ['-10%', '10%']);
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     setShowBackToTop(latest > 0.1);
-    // setCenterThumbnails(latest > 0.15);
   });
 
+  // --- THE INTRO TIMELINE CONTROL ---
+  useEffect(() => {
+    // 1. Trigger the massive horizontal slide
+    const t1 = setTimeout(() => setIntroPhase('sliding'), 100);
+    // 2. Interrupt the slide halfway through and suck them into the sidebar
+    const t2 = setTimeout(() => setIntroPhase('morphing'), 1800);
+    // 3. Mark as done, unlock scrolling
+    const t3 = setTimeout(() => setIntroPhase('done'), 3000);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []);
+
+  // --- LENIS SCROLL SETUP ---
   useEffect(() => {
     const lenis = new Lenis({
       duration: 0.8,
@@ -62,174 +69,194 @@ const [selectedProject, setSelectedProject] = useState(null);
       wheelMultiplier: 1.5,
       smoothTouch: true,
     });
-
     lenisRef.current = lenis;
 
     function raf(time) {
       lenis.raf(time);
       requestAnimationFrame(raf);
     }
-
     requestAnimationFrame(raf);
     return () => lenis.destroy();
   }, []);
 
-  const scrollToTop = () => {
-    lenisRef.current?.scrollTo(0, { duration: 1.5 });
-  };
+  useEffect(() => {
+    if (!lenisRef.current) return;
+    if (introPhase !== 'done') {
+      lenisRef.current.stop();
+    } else {
+      lenisRef.current.start();
+    }
+  }, [introPhase]);
+
+  const scrollToTop = () => lenisRef.current?.scrollTo(0, { duration: 1.5 });
 
   const handleThumbnailClick = (index) => {
-  setCenterThumbnails(false);
-
-  // wait for animation to finish before scrolling
-  setTimeout(() => {
-    lenisRef.current?.scrollTo(index * window.innerHeight, {
-      duration: 1.2,
-      easing: (t) => 1 - Math.pow(1 - t, 4)
-    });
-  }, 600); // matches transition timing
-};
+    setTimeout(() => {
+      lenisRef.current?.scrollTo((index + 1) * window.innerHeight, {
+        duration: 1.2,
+        easing: (t) => 1 - Math.pow(1 - t, 4)
+      });
+    }, 600); 
+  };
 
   return (
     <>
-      <button className="menu-trigger" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-        {isMenuOpen ? 'Close' : 'Menu'}
-      </button>
+      <Menu />
+      
+      {/* 1. THE BLURRED CURTAIN OVERLAY */}
+      <motion.div 
+        className="intro-curtain"
+        initial={{ x: 0 }}
+        animate={{ x: (introPhase === 'morphing' || introPhase === 'done') ? '-100vw' : '0' }}
+        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+      />
 
-      <AnimatePresence>
-  {isMenuOpen && (
-    <motion.nav 
-      className="nav-overlay"
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      style={{ pointerEvents: 'auto' }}
-    >
-      <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/about">About</a></li>
-        <li><a href="/product">Product</a></li>
-        <li><a href="/services">Services</a></li>
-        <li><a href="/careers">Careers</a></li>
-        <li><a href="/contact">Contact</a></li>
-      </ul>
-    </motion.nav>
-  )}
-</AnimatePresence>
+      {/* 2. HERO SECTION */}
+      <section className="work-hero">
+        <div className="work-hero-bg">
+          <motion.img 
+            src={parkindore} 
+            alt="Fizza Interiors Hero"
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 1.5, ease: [0.76, 0, 0.24, 1] }}
+          />
+          <div className="hero-overlay"></div>
+        </div>
+        <div className="hero-left">
+          <motion.h1 
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 1, ease: [0.76, 0, 0.24, 1] }}
+          >
+            FIZZA<br/><span>INTERIORS</span>
+          </motion.h1>
+          <p className="location-tag">MUMBAI, INDIA — OUR PORTFOLIO</p>
+        </div>
+      </section>
 
-      {/* Fullscreen projects */}
-    <motion.section className="work-container">
+      {/* 3. FULLSCREEN PROJECTS */}
+      <motion.section className="work-container">
         {projects.map((proj, i) => (
           <ProjectCard
             key={proj.id}
             project={proj}
             index={i}
             setActiveIndex={setActiveIndex}
-            setSelectedProject={setSelectedProject} // Add this line
+            setSelectedProject={setSelectedProject} 
           />
         ))}
       </motion.section>
 
-      {/* Thumbnail sidebar */}
-     <motion.div
-  className="thumbnail-sidebar"
-  style={{
-    y: thumbnailScroll, // Ensure this is active
-    pointerEvents: "auto",
-    opacity: 1
-  }}
-  transition={{
-    duration: 0.6,
-    ease: [0.76, 0, 0.24, 1]
-  }}
->
-        {projects.map((proj, i) => (
-          <div
-            key={proj.id}
-            className={`thumbnail-container ${activeIndex === i ? 'active' : ''}`}
-            onClick={() => handleThumbnailClick(i)}
-          >
-            <motion.img
-              layoutId={`thumb-${proj.id}`} 
-              style={{ y: thumbnailY }}
-              src={proj.img}
-              alt={proj.title}
-              className="thumbnail-image"
-            />
-          </div>
-        ))}
 
-       {centerThumbnails && (
-  <div className="thumbnail-counter">
-    {activeIndex + 1}
-    <span className="counter-line"></span>
-    {projects.length}
-  </div>
-)}
+<motion.div
+        layout="position"
+        className={`thumbnail-sidebar ${introPhase === 'morphing' || introPhase === 'done' ? 'is-column' : 'is-track-visible'}`}
+        initial={{ x: '100vw' }}
+        animate={{ x: introPhase === 'start' ? '100vw' : introPhase === 'sliding' ? '-20vw' : 0 }}
+        style={{
+          y: thumbnailScroll, 
+          pointerEvents: introPhase === 'done' ? "auto" : "none"
+        }}
+        transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
+      >
+        {projects.map((proj, i) => {
+          const isLarge = introPhase === 'start' || introPhase === 'sliding';
+          return (
+            <motion.div
+              key={proj.id}
+              layout
+              className={`thumbnail-container ${isLarge ? 'is-large' : 'is-small'} ${activeIndex === i ? 'active' : ''}`}
+              onClick={() => introPhase === 'done' && handleThumbnailClick(i)}
+              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <motion.img
+                layout
+                layoutId={`thumb-${proj.id}`} 
+                src={proj.img}
+                alt={proj.title}
+                className="thumbnail-image"
+                style={{ y: thumbnailY }} 
+                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+              />
+            </motion.div>
+          );
+        })}
+        {/* The old counter has been completely removed from here */}
       </motion.div>
+      
+      {/* --- FLOATING ANIMATED COUNTER --- */}
       <AnimatePresence>
-  {showBackToTop && (
-    <motion.button 
-      className="back-to-top"
-      onClick={scrollToTop}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 20 }}
-      style={{ color: '#ffffff', borderColor: '#ffffff' }}
-    >
-      ↑
-    </motion.button>
-  )}
-</AnimatePresence>
+        {introPhase === 'done' && (
+          <motion.div 
+            className="fixed-thumbnail-counter"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {/* The sliding active digit */}
+            {/* The sliding active digit */}
+            <div className="counter-digit-wrapper">
+              <AnimatePresence mode="popLayout">
+                <motion.span
+                  key={activeIndex} 
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -20, opacity: 0 }}
+                  /* INCREASED DURATION HERE */
+                  transition={{ duration: 1.5}}
+                  className="counter-digit"
+                >
+                  {activeIndex + 1}
+                </motion.span>
+              </AnimatePresence>
+            </div>
+
+            <span className="counter-line"></span>
+            
+            <span className="counter-total">{projects.length}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      
+      {/* 5. BACK TO TOP */}
+      <AnimatePresence>
+        {showBackToTop && introPhase === 'done' && (
+          <motion.button 
+            className="back-to-top"
+            onClick={scrollToTop}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+          >
+            ↑
+          </motion.button>
+        )}
+      </AnimatePresence>
     </>
   );
 }
 
+
 function ProjectCard({ project, index, setActiveIndex, setSelectedProject }) {
   const ref = useRef(null);
-  
-  
-
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start end', 'end start']
-  });
-
-  const objectPosition = useTransform(
-    scrollYProgress,
-    [0, 1],
-    ["center 100%", "center 0%"]
-  );
-
-  const opacity = useTransform(
-    scrollYProgress,
-    [0, 0.5, 1],
-    [0.6, 1, 0.6]
-  );
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
+  const objectPosition = useTransform(scrollYProgress, [0, 1], ["center 100%", "center 0%"]);
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    if (latest > 0.3 && latest < 0.7) {
-      setActiveIndex(index);
-    }
+    if (latest > 0.3 && latest < 0.7) setActiveIndex(index);
   });
 
   return (
     <div ref={ref} className="project-wrapper" onClick={() => setSelectedProject(project)}>
       <motion.div className="project-image-container">
-        <motion.img
-          layoutId={`main-${project.id}`} /* Change 'project' to 'main' */
-          style={{ objectPosition }}
-          src={project.img}
-          alt={project.title}
-          className="project-image"
-        />
+        <motion.img layoutId={`main-${project.id}`} style={{ objectPosition }} src={project.img} alt={project.title} className="project-image" />
       </motion.div>
       <div className="project-info">
         <h3>{project.client}</h3>
         <h2>{project.title}</h2>
-        <p style={{ color: '#ffffff', opacity: 0.8 }}>
-          {project.location}
-        </p>
+        <p style={{ color: '#ffffff', opacity: 0.8 }}>{project.location}</p>
       </div>
     </div>
   );

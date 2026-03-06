@@ -1,0 +1,133 @@
+/* --- MAIN LAYOUT --- */
+.page-container {
+  min-height: 100vh;
+  background-color: #050505; /* Deep dark background to match the theme */
+  color: #ffffff;
+  padding: 140px 5% 80px; /* Generous top padding to account for the fixed menu */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: inherit;
+}
+
+/* --- HEADER SECTION --- */
+.page-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.page-header h1 {
+  font-size: 3.5rem;
+  font-weight: 300;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0 0 15px 0;
+}
+
+.page-header .subtitle {
+  font-size: 1.1rem;
+  color: #a0a0a0;
+  font-weight: 300;
+  letter-spacing: 1px;
+}
+
+/* --- CONTENT SECTION --- */
+.page-content {
+  max-width: 800px; /* Restricts width for comfortable reading */
+  width: 100%;
+}
+
+.text-block {
+  margin-bottom: 35px;
+}
+
+.text-block p {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #cccccc;
+  font-weight: 300;
+  margin: 0;
+}
+
+.text-block strong {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* --- RECRUITMENT CONTACT BLOCK --- */
+.contact-block {
+  margin-top: 60px;
+  padding-top: 40px;
+  border-top: 1px solid #222; /* Subtle divider line */
+}
+
+.contact-block h3 {
+  font-size: 1.5rem;
+  font-weight: 400;
+  margin-bottom: 10px;
+  color: #ffffff;
+}
+
+.contact-block p {
+  color: #a0a0a0;
+  margin-bottom: 25px;
+}
+
+.email-links {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.email-links a {
+  color: #ffffff;
+  font-size: 1.2rem;
+  text-decoration: none;
+  position: relative;
+  width: fit-content;
+  transition: color 0.3s ease;
+}
+
+/* Underline hover animation for links */
+.email-links a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 1px;
+  bottom: -4px;
+  left: 0;
+  background-color: #ffffff;
+  transition: width 0.3s ease;
+}
+
+.email-links a:hover {
+  color: #a0a0a0;
+}
+
+.email-links a:hover::after {
+  width: 100%;
+}
+
+/* --- MOBILE RESPONSIVENESS --- */
+@media (max-width: 768px) {
+  .page-container {
+    padding: 120px 20px 60px;
+  }
+  
+  .page-header h1 {
+    font-size: 2.5rem;
+  }
+
+  .page-header .subtitle {
+    font-size: 1rem;
+  }
+
+  .text-block p {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  
+  .email-links a {
+    font-size: 1.1rem;
+  }
+}

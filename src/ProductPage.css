@@ -1,0 +1,388 @@
+/* Base Resets & Layout */
+:root {
+  --bg-color: #f4f4f4;
+  --text-color: #111111;
+  --nav-height: 80px;
+  --smooth-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden; 
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.akuko-wrapper {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Navbar */
+.akuko-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--nav-height);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4vw;
+  z-index: 100;
+  background: linear-gradient(to bottom, rgba(244,244,244,1) 0%, rgba(244,244,244,0) 100%);
+  pointer-events: none; 
+}
+
+.nav-left, .nav-right { pointer-events: auto; }
+.logo { font-size: 1.2rem; font-weight: 700; text-decoration: none; color: var(--text-color); text-transform: uppercase; letter-spacing: 1px; }
+.nav-right { display: flex; gap: 2rem; }
+.nav-link { text-decoration: none; color: var(--text-color); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; transition: opacity 0.3s ease; }
+.nav-link:hover { opacity: 0.5; }
+
+/* Horizontal Scroll Container */
+.horizontal-scroll-container {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100vw;
+  height: 100vh;
+  padding-top: var(--nav-height);
+  padding-bottom: 4vh;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: auto; 
+  scrollbar-width: none; 
+  -ms-overflow-style: none;  
+  /* Smoothly transitions the top/bottom padding when expanding */
+  transition: padding 1.2s var(--smooth-ease);
+}
+
+.horizontal-scroll-container::-webkit-scrollbar { display: none; }
+
+/* When a panel is expanded, we strip the top/bottom padding so it touches the screen edges */
+.horizontal-scroll-container.has-expanded-panel {
+  padding-top: 0;
+  padding-bottom: 0;
+  align-items: flex-start; 
+}
+
+.scroll-panel {
+  flex: 0 0 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+/* Intro Panel */
+.intro-panel { width: 40vw; padding: 0 4vw; min-width: 400px; }
+.intro-content h1 { font-size: 2.8vw; line-height: 1.1; font-weight: 500; margin-bottom: 1rem; }
+.intro-content p { font-size: 1.1rem; color: #666; }
+
+/* --- THE ACCORDION LOGIC --- */
+
+.product-panel {
+  /* Strict baseline width */
+  width: 38vw; 
+  min-width: 450px;
+  padding: 0 1.5vw;
+  /* Crucial: prevents Flexbox from squishing the panel */
+  flex-shrink: 0; 
+  transition: width 1s var(--smooth-ease), padding 1.2s var(--smooth-ease);
+  overflow-y: hidden;
+  height: 100%;
+}
+
+.product-panel:hover {
+  width: 48vw;
+}
+
+/* The black card container. 
+  It has a fixed height of 75vh normally. 
+*/
+.product-card-inner {
+  position: relative;
+  width: 100%;
+  height: 75vh; 
+  background-color: #000; 
+  border-radius: 4px; 
+  overflow: hidden;
+  cursor: pointer;
+  /* We transition the height for when it expands to full screen */
+  transition: height 1.2s var(--smooth-ease), border-radius 1.2s var(--smooth-ease);
+}
+
+/* The Image Wrapper.
+  Instead of padding/inset tricks, we just give it strict dimensions 
+  and shrink its height on hover to reveal the black border.
+*/
+.image-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: width 1.2s var(--smooth-ease), height 1.2s var(--smooth-ease), top 1.2s var(--smooth-ease), left 1.2s var(--smooth-ease);
+  z-index: 2;
+}
+
+.product-panel:hover .image-wrapper {
+  /* Creates the 10px side/top borders and leaves a huge gap at the bottom */
+  top: 10px;
+  left: 10px;
+  width: calc(100% - 20px);
+  height: calc(100% - 12rem);
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.15); 
+  transform-origin: center center;
+  transition: transform 1.2s var(--smooth-ease);
+}
+
+.product-panel:hover .product-image {
+  transform: scale(1); 
+}
+
+/* Hover Information */
+.hover-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 12rem; 
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 1; 
+  box-sizing: border-box;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.info-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+.info-header h2 { font-size: 1.8rem; margin: 0; font-weight: 500; transform: translateY(15px); transition: transform 0.5s ease; }
+.hover-info p { font-size: 0.95rem; line-height: 1.5; color: rgba(255, 255, 255, 0.7); margin: 0; max-width: 75%; transform: translateY(15px); transition: transform 0.5s ease; }
+
+.cta-button {
+  background: #fff; border: none; color: #000; padding: 0.7rem 1.5rem; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; border-radius: 2px;
+  opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(10px); transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s 0.2s; 
+}
+.cta-button:hover { background: #ccc; }
+
+/* Reveal Triggers */
+.product-panel:hover .hover-info { opacity: 1; }
+.product-panel:hover .info-header h2 { transform: translateY(0); transition-delay: 0.1s; }
+.product-panel:hover .hover-info p { transform: translateY(0); transition-delay: 0.2s; }
+.product-panel:hover .cta-button { opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0); transition: opacity 0.4s ease, transform 0.4s ease, visibility 0s; transition-delay: 0.9s; }
+
+/* --- FULLSCREEN EXPANSION LOGIC --- */
+
+.product-panel.is-expanded {
+  width: 100vw;
+  min-width: 100vw;
+  padding: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100vh;
+}
+
+.product-panel.is-expanded .product-card-inner {
+  height: 100vh; 
+  border-radius: 0; 
+  cursor: default; 
+}
+
+/* Override hover styles to fill screen */
+.product-panel.is-expanded .image-wrapper,
+.product-panel.is-expanded:hover .image-wrapper {
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100vh !important;
+  border-radius: 0;
+}
+
+.product-panel.is-expanded .product-image,
+.product-panel.is-expanded:hover .product-image {
+  transform: scale(1) !important;
+}
+
+.product-panel.is-expanded .hover-info,
+.product-panel.is-expanded:hover .hover-info {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.close-expanded-btn {
+  position: absolute; top: 30px; left: 4vw; background: none; border: none; color: #fff; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; z-index: 99; mix-blend-mode: difference;
+  opacity: 0; animation: fadeIn 0.5s ease forwards 1s; 
+}
+
+@keyframes fadeIn { to { opacity: 1; } }
+
+/* Expanded Content Area */
+.expanded-detail-content {
+  height: 0; opacity: 0; overflow: hidden;
+}
+
+.product-panel.is-expanded .expanded-detail-content {
+  height: auto; opacity: 1; padding: 6rem 4vw; background-color: var(--bg-color); color: var(--text-color); transition: opacity 1s ease 0.8s; 
+}
+
+.detail-text-header h1 { font-size: 4rem; font-weight: 500; margin: 0 0 1rem 0; }
+.detail-text-header p { font-size: 1.2rem; max-width: 600px; line-height: 1.6; color: #555; margin-bottom: 4rem; }
+
+.detail-gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 2vw; }
+
+/* Footer */
+.footer-panel { width: 50vw; padding: 0 4vw; min-width: 600px; }
+.footer-content { display: flex; gap: 4rem; background-color: #fff; padding: 4rem; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+.designer-info, .newsletter-box { flex: 1; }
+.designer-info h2, .newsletter-box h3 { font-size: 1.5rem; margin-top: 0; }
+.designer-info p, .newsletter-box p { line-height: 1.6; color: #555; }
+.subscribe-form { display: flex; margin-top: 1.5rem; border-bottom: 1px solid var(--text-color); }
+.subscribe-form input { flex-grow: 1; border: none; background: transparent; padding: 0.5rem 0; font-size: 1rem; }
+.subscribe-form input:focus { outline: none; }
+.subscribe-form button { background: transparent; border: none; font-size: 1.5rem; cursor: pointer; padding: 0 0.5rem; }
+
+
+.fullscreen-detail-view {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--bg-color); 
+  z-index: 90; /* Sits right under the nav */
+  overflow-y: auto; 
+  overflow-x: hidden;
+}
+
+.close-detail-btn {
+  position: fixed;
+  top: 30px; 
+  left: 4vw;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  z-index: 99;
+  mix-blend-mode: difference; 
+}
+
+/* The hero section holding the expanded image */
+.detail-hero-section {
+  position: relative;
+  width: 100%;
+  height: 100vh; 
+  background-color: #000;
+  border-radius: 0; 
+}
+
+.detail-hero-wrapper {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 0;
+}
+
+.detail-hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Remove the old .detail-gallery img rule and add these: */
+.gallery-parallax-wrapper {
+  width: 100%;
+  height: 600px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.gallery-parallax-img {
+  width: 100%;
+  height: 130%; /* 30% extra height ensures it has room to slide */
+  object-fit: cover;
+  margin-top: -15%; /* Pulls the image up to center the extra height */
+  will-change: transform;
+}
+
+@media (max-width: 768px) {
+  .gallery-parallax-wrapper {
+    height: 400px;
+  }
+}
+
+/* Content that appears when you scroll down */
+.detail-scrollable-content {
+  padding: 6rem 4vw;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.detail-text-header h1 {
+  font-size: 4rem;
+  font-weight: 500;
+  margin: 0 0 1rem 0;
+}
+
+.detail-text-header p {
+  font-size: 1.2rem;
+  max-width: 600px;
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 4rem;
+}
+
+.detail-gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2vw;
+}
+
+
+
+@media (max-width: 768px) {
+  .detail-text-header h1 {
+    font-size: 2.5rem;
+  }
+  .detail-gallery {
+    grid-template-columns: 1fr;
+  }
+
+}
+/* Mobile */
+@media (max-width: 768px) {
+  .intro-panel, .product-panel { width: 85vw; }
+  .footer-panel { width: 90vw; }
+  .footer-content { flex-direction: column; padding: 2rem; gap: 2rem; }
+  .nav-right { display: none; }
+  
+  .product-panel:hover .image-wrapper { top: 10px; left: 10px; width: calc(100% - 20px); height: calc(100% - 12rem); }
+  .product-image { transform: scale(1); }
+  .info-header h2, .hover-info p, .cta-button { opacity: 1; transform: translateY(0); visibility: visible; }
+  
+  .detail-text-header h1 { font-size: 2.5rem; }
+  .detail-gallery { grid-template-columns: 1fr; }
+
+
+  
+}
