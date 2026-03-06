@@ -1,0 +1,46 @@
+.premium-preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #ffffff; /* White background */
+  color: #000000; /* Black text */
+  z-index: 999999;
+  display: flex;
+  align-items: flex-end; /* Push content to the bottom */
+  padding: 4vw; /* Nice spacious padding */
+  box-sizing: border-box;
+}
+
+.preloader-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+  font-family: inherit; /* Will inherit your website's main font */
+}
+
+.preloader-brand {
+  font-size: 1.2rem;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.preloader-counter {
+  font-size: 8vw; /* Massive, striking number */
+  line-height: 0.8;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .preloader-counter {
+    font-size: 15vw;
+  }
+  .preloader-brand {
+    font-size: 1rem;
+  }
+}
