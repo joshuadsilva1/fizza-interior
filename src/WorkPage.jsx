@@ -42,21 +42,29 @@ export default function WorkPage() {
   const lenisRef = useRef(null);
   
   const { scrollYProgress } = useScroll();
-  const thumbnailScroll = useTransform(scrollYProgress, [0, 1], ["0%", "-50%"]);
-  const thumbnailY = useTransform(scrollYProgress, [0, 1], ['-10%', '10%']);
+  
+  // FIX: Reverted to a clean transform. 
+  // -70% perfectly slides the small column UP as you scroll DOWN.
+  const thumbnailScroll = useTransform(scrollYProgress, [0, 1], ["0%", "-40%"]);
+  
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     setShowBackToTop(latest > 0.1);
   });
 
   // --- THE INTRO TIMELINE CONTROL ---
+  // --- THE INTRO TIMELINE CONTROL ---
+  // --- THE INTRO TIMELINE CONTROL ---
   useEffect(() => {
     // 1. Trigger the massive horizontal slide
     const t1 = setTimeout(() => setIntroPhase('sliding'), 100);
-    // 2. Interrupt the slide halfway through and suck them into the sidebar
-    const t2 = setTimeout(() => setIntroPhase('morphing'), 1800);
-    // 3. Mark as done, unlock scrolling
-    const t3 = setTimeout(() => setIntroPhase('done'), 3000);
+    
+    // 2. Wait a full 6.9 seconds for the slow pan to finish
+    const t2 = setTimeout(() => setIntroPhase('morphing'), 7000); 
+    
+    // 3. FIX: Give it a full 3.0 seconds to morph (10000 - 7000)
+    const t3 = setTimeout(() => setIntroPhase('done'), 10000); 
+    
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, []);
 
@@ -101,7 +109,17 @@ export default function WorkPage() {
 
   return (
     <>
-      <Menu />
+            <AnimatePresence>
+        {introPhase === 'done' && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            transition={{ duration: 1 }}
+          >
+            <Menu />
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* 1. THE BLURRED CURTAIN OVERLAY */}
       <motion.div 
@@ -110,6 +128,7 @@ export default function WorkPage() {
         animate={{ x: (introPhase === 'morphing' || introPhase === 'done') ? '-100vw' : '0' }}
         transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
       />
+
 
       {/* 2. HERO SECTION */}
       <section className="work-hero">
@@ -147,18 +166,28 @@ export default function WorkPage() {
           />
         ))}
       </motion.section>
-
-
 <motion.div
         layout="position"
         className={`thumbnail-sidebar ${introPhase === 'morphing' || introPhase === 'done' ? 'is-column' : 'is-track-visible'}`}
-        initial={{ x: '100vw' }}
-        animate={{ x: introPhase === 'start' ? '100vw' : introPhase === 'sliding' ? '-20vw' : 0 }}
+        
+        // 1. Add top: '0%' to the initial state
+        initial={{ x: '-97%', top: '0%' }}
+        
+        animate={{ 
+          x: introPhase === 'start' ? '-95%' : introPhase === 'sliding' ? '0vw' : 0,
+          
+          // 2. THE 50-POINT FIX: Animate top to 40% ONLY when morphing or done!
+          top: (introPhase === 'morphing' || introPhase === 'done') ? '40%' : '0%'
+        }}
+        
         style={{
           y: thumbnailScroll, 
           pointerEvents: introPhase === 'done' ? "auto" : "none"
         }}
-        transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
+       transition={{ 
+          duration: introPhase === 'sliding' ? 6.9 : 3.0, 
+          ease: [0.76, 0, 0.24, 1] 
+        }}
       >
         {projects.map((proj, i) => {
           const isLarge = introPhase === 'start' || introPhase === 'sliding';
@@ -168,7 +197,8 @@ export default function WorkPage() {
               layout
               className={`thumbnail-container ${isLarge ? 'is-large' : 'is-small'} ${activeIndex === i ? 'active' : ''}`}
               onClick={() => introPhase === 'done' && handleThumbnailClick(i)}
-              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+              // Images take exactly 3 seconds to shrink, matching the container
+              transition={{ duration: 3.0, ease: [0.76, 0, 0.24, 1] }}
             >
               <motion.img
                 layout
@@ -176,13 +206,26 @@ export default function WorkPage() {
                 src={proj.img}
                 alt={proj.title}
                 className="thumbnail-image"
-                style={{ y: thumbnailY }} 
-                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                
+                // 1. Start with the image pulled to the right edge
+                initial={{ objectPosition: "100% 50%" }}
+                
+                animate={{ 
+                  // 2. Pan the image content to the left edge while the track slides right
+                  // 3. Snap to perfectly centered (50% 50%) for the vertical sidebar
+                  objectPosition: introPhase === 'start' ? "100% 50%" : introPhase === 'sliding' ? "0% 50%" : "50% 50%"
+                }}
+                
+
+                
+                transition={{ 
+                  duration: introPhase === 'sliding' ? 6.9 : 3.0, 
+                  ease: [0.76, 0, 0.24, 1] 
+                }}
               />
             </motion.div>
           );
         })}
-        {/* The old counter has been completely removed from here */}
       </motion.div>
       
       {/* --- FLOATING ANIMATED COUNTER --- */}
@@ -238,10 +281,13 @@ export default function WorkPage() {
   );
 }
 
-
 function ProjectCard({ project, index, setActiveIndex, setSelectedProject }) {
   const ref = useRef(null);
+  
+  // 1. Restored the local scroll progress attached to this specific card's ref
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
+  
+  // 2. Restored the parallax effect for the fullscreen background image
   const objectPosition = useTransform(scrollYProgress, [0, 1], ["center 100%", "center 0%"]);
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {

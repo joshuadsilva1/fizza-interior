@@ -97,26 +97,28 @@
 
 /* STATE 1: Massive Horizontal Slider Track */
 .thumbnail-sidebar.is-track-visible {
-  inset: 0;
-  width: 100vw;
+  /* FIX: Remove 'inset: 0;' entirely so it doesn't fight Framer Motion */
+  left: 0;
+  width: max-content; 
   height: 100vh;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
   padding-left: 10vw;
+  padding-right: 10vw; 
   gap: 3vw;
 }
 
 /* STATE 2: Vertical Sidebar Column */
 .thumbnail-sidebar.is-column {
-  top: 40%;
+  /* FIX: Remove 'top: 0;' completely from here! */
   left: 20px;
+  height: auto; /* Put this back to auto so it shrinks tightly around the images */
   display: flex;
   flex-direction: column;
   gap: 10px;
   width: auto;
-  height: auto;
 }
 
 .thumbnail-container {
